@@ -6,7 +6,7 @@ The official JavaScript client for the [Mapricot API](https://mapricot.com/): ad
 npm install mapricot
 ```
 
-It is also on JSR as [`@mapricot/mapricot`](https://jsr.io/@mapricot/mapricot) for Deno. It uses the built-in `fetch`, so it has no dependencies and runs in Node.js 20 and later, Deno, Bun, Cloudflare Workers, and browsers. Types are included.
+It uses the built-in `fetch`, so it has no dependencies and runs in Node.js 20 and later, Deno (as `npm:mapricot`), Bun, Cloudflare Workers, and browsers. Types are included.
 
 ## Quick start
 

@@ -25,7 +25,6 @@ jobs:
       - run: npm test
         env:
           MAPRICOT_KEY: ${{ secrets.MAPRICOT_KEY }}
-      - run: npx jsr publish --dry-run
   endpoints:
     # Fails when the API gains an endpoint that this client has no method for.
     runs-on: ubuntu-latest
