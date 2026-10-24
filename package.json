@@ -1,0 +1,37 @@
+{
+  "name": "mapricot",
+  "version": "0.1.0",
+  "description": "Official client for the Mapricot API: geocoding, places, routing, and IP geolocation.",
+  "keywords": [
+    "geocoding",
+    "places",
+    "routing",
+    "ip-geolocation",
+    "maps"
+  ],
+  "homepage": "https://mapricot.com/docs/node/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mapricothq/mapricot.git",
+    "directory": "sdks/js"
+  },
+  "bugs": "https://github.com/mapricothq/mapricot/issues",
+  "license": "MIT",
+  "type": "module",
+  "exports": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc && node --test",
+    "prepublishOnly": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}

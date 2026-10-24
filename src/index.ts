@@ -1,0 +1,233 @@
+export interface Attribution {
+  source: string;
+  text: string;
+  url: string;
+}
+
+export interface Address {
+  houseNumber?: string;
+  street?: string;
+  postalCode?: string;
+  locality?: string;
+  region?: string;
+  regionCode?: string;
+  country?: string;
+  countryCode?: string;
+}
+
+export interface Place {
+  id: string;
+  type: string;
+  name: string;
+  label: string;
+  lat: number;
+  lon: number;
+  address?: Address;
+  categories?: string[];
+  distanceMeters?: number;
+  source: string;
+}
+
+export interface Places {
+  results: Place[];
+  attribution: Attribution[];
+}
+
+export interface PlaceResult {
+  result: Place;
+  attribution: Attribution[];
+}
+
+export interface Leg {
+  distanceMeters: number;
+  durationSeconds: number;
+}
+
+export interface Route {
+  distanceMeters: number;
+  durationSeconds: number;
+  /** Encoded polyline with six decimal places of precision. */
+  polyline: string;
+  legs: Leg[];
+}
+
+export interface Routes {
+  routes: Route[];
+  attribution?: Attribution[];
+}
+
+export interface IpLocation {
+  ip: string;
+  found: boolean;
+  continentCode?: string;
+  countryCode?: string;
+  countryName?: string;
+  regionCode?: string;
+  regionName?: string;
+  city?: string;
+  location?: Point;
+  source: string;
+  attributionUrl: string;
+  licenseUrl: string;
+  datasetRelease: string;
+}
+
+export interface Account {
+  id: string;
+  name: string;
+  status: string;
+  created_at: string;
+}
+
+export interface Point {
+  lat: number;
+  lon: number;
+}
+
+export interface SearchOptions {
+  focus?: Point;
+  country?: string | string[];
+  limit?: number;
+  lang?: string;
+}
+
+export interface ReverseOptions {
+  limit?: number;
+  lang?: string;
+}
+
+export interface NearbyOptions {
+  category?: string | string[];
+  radius?: number;
+  limit?: number;
+  lang?: string;
+}
+
+export interface ClientOptions {
+  /** Defaults to the MAPRICOT_KEY environment variable. */
+  apiKey?: string;
+  baseUrl?: string;
+  /** Milliseconds per attempt. */
+  timeout?: number;
+  /** Retries for 503 and for 429 with too many requests in progress. */
+  maxRetries?: number;
+}
+
+export class MapricotError extends Error {
+  readonly status: number;
+  readonly code: string;
+  readonly requestId: string | null;
+
+  constructor(status: number, code: string, message: string, requestId: string | null) {
+    super(message);
+    this.name = "MapricotError";
+    this.status = status;
+    this.code = code;
+    this.requestId = requestId;
+  }
+}
+
+type Params = Record<string, string | number | string[] | Point | undefined>;
+
+export class Mapricot {
+  readonly #apiKey: string;
+  readonly #baseUrl: string;
+  readonly #timeout: number;
+  readonly #maxRetries: number;
+
+  constructor(options: ClientOptions = {}) {
+    const apiKey = options.apiKey ?? (globalThis as any).process?.env?.MAPRICOT_KEY;
+    if (!apiKey) throw new Error("Pass apiKey or set MAPRICOT_KEY.");
+    this.#apiKey = apiKey;
+    this.#baseUrl = options.baseUrl ?? "https://api.mapricot.com";
+    this.#timeout = options.timeout ?? 30_000;
+    this.#maxRetries = options.maxRetries ?? 2;
+  }
+
+  /** Find addresses and places matching free text. */
+  search(q: string, options: SearchOptions = {}): Promise<Places> {
+    return this.#request("GET", "/v1/search", { q, ...options });
+  }
+
+  /** Suggest addresses and places as someone types. */
+  autocomplete(q: string, options: SearchOptions = {}): Promise<Places> {
+    return this.#request("GET", "/v1/autocomplete", { q, ...options });
+  }
+
+  /** Find the address nearest a coordinate, or the area around it. */
+  reverse(lat: number, lon: number, options: ReverseOptions = {}): Promise<Places> {
+    return this.#request("GET", "/v1/reverse", { lat, lon, ...options });
+  }
+
+  /** List places around a coordinate, optionally by category. */
+  nearby(lat: number, lon: number, options: NearbyOptions = {}): Promise<Places> {
+    return this.#request("GET", "/v1/nearby", { lat, lon, ...options });
+  }
+
+  /** Look up one place by its Mapricot ID. */
+  place(id: string, options: { lang?: string } = {}): Promise<PlaceResult> {
+    return this.#request("GET", `/v1/places/${encodeURIComponent(id)}`, options);
+  }
+
+  /** Find a route through 2 to 20 waypoints. */
+  route(waypoints: Point[], options: { mode?: "drive" | "walk" | "bicycle" } = {}): Promise<Routes> {
+    return this.#request("POST", "/v1/route", {}, { waypoints, ...options });
+  }
+
+  /** Approximate location of a public IP address. */
+  ip(address: string): Promise<IpLocation> {
+    return this.#request("GET", `/v1/ip/${encodeURIComponent(address)}`, {});
+  }
+
+  /** The key's account. Not billed, so it checks a key for free. */
+  account(): Promise<Account> {
+    return this.#request("GET", "/v1/account", {});
+  }
+
+  async #request<T>(method: string, path: string, params: Params, body?: object): Promise<T> {
+    const url = new URL(path, this.#baseUrl);
+    for (const [name, value] of Object.entries(params)) {
+      if (value === undefined) continue;
+      url.searchParams.set(name, format(value));
+    }
+    const headers: Record<string, string> = { Authorization: `Bearer ${this.#apiKey}` };
+    if (body) headers["Content-Type"] = "application/json";
+
+    for (let attempt = 0; ; attempt++) {
+      const response = await fetch(url, {
+        method,
+        headers,
+        body: body && JSON.stringify(body),
+        signal: AbortSignal.timeout(this.#timeout),
+      });
+      if (response.ok) return (await response.json()) as T;
+
+      const error = await errorFrom(response);
+      if (attempt < this.#maxRetries && retryable(error)) {
+        await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** attempt));
+        continue;
+      }
+      throw error;
+    }
+  }
+}
+
+function format(value: string | number | string[] | Point): string {
+  if (Array.isArray(value)) return value.join(",");
+  if (typeof value === "object") return `${value.lat},${value.lon}`;
+  return String(value);
+}
+
+async function errorFrom(response: Response): Promise<MapricotError> {
+  const requestId = response.headers.get("X-Request-Id");
+  try {
+    const { error } = await response.json();
+    return new MapricotError(response.status, error.code, error.message, requestId);
+  } catch {
+    return new MapricotError(response.status, "unknown", `HTTP ${response.status}`, requestId);
+  }
+}
+
+function retryable(error: MapricotError): boolean {
+  return error.status === 503 || error.code === "concurrency_exceeded";
+}
