@@ -1,8 +1,0 @@
-{
-  "name": "@mapricot/mapricot",
-  "version": "0.1.0",
-  "exports": "./src/index.ts",
-  "publish": {
-    "include": ["src", "README.md", "LICENSE"]
-  }
-}
