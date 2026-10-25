@@ -64,6 +64,20 @@ export interface Routes {
   attribution?: Attribution[];
 }
 
+export interface Isochrone {
+  type: "Feature";
+  properties: { minutes: number };
+  /** [longitude, latitude] rings, as GeoJSON. */
+  geometry: { type: "Polygon"; coordinates: [number, number][][] } | { type: "MultiPolygon"; coordinates: [number, number][][][] };
+}
+
+export interface Isochrones {
+  type: "FeatureCollection";
+  /** One area per time, largest first. Empty when there is no road near the location. */
+  features: Isochrone[];
+  attribution?: Attribution[];
+}
+
 export interface IpLocation {
   ip: string;
   found: boolean;
@@ -186,6 +200,15 @@ export class Mapricot {
     { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; geometries?: "polyline" | "polyline6" | "geojson" } = {},
   ): Promise<Routes> {
     return this.#request("POST", "/routing/v1/route", {}, signal, { waypoints, ...options });
+  }
+
+  /** The areas reachable from a location within 1 to 4 times, each 1 to 120 minutes. */
+  isochrone(
+    location: Point,
+    minutes: number[],
+    { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle" } = {},
+  ): Promise<Isochrones> {
+    return this.#request("POST", "/routing/v1/isochrone", {}, signal, { location, minutes, ...options });
   }
 
   /** Approximate location of a public IP address. */
