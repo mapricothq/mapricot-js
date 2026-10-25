@@ -14,29 +14,27 @@ async function serve(handler) {
 }
 
 test("a signal cancels a request in progress", async (t) => {
-  const { seen, server, baseUrl } = await serve(() => {});
+  const controller = new AbortController();
+  const { seen, server, baseUrl } = await serve(() => controller.abort());
   t.after(() => {
     server.closeAllConnections();
     server.close();
   });
   const client = new Mapricot({ apiKey: "k", baseUrl });
-  const controller = new AbortController();
   const request = client.autocomplete("stump", { limit: 5, signal: controller.signal });
-  setTimeout(() => controller.abort(), 50);
   await assert.rejects(request, { name: "AbortError" });
   assert.deepEqual(seen, ["/v1/autocomplete?q=stump&limit=5"]);
 });
 
 test("a signal stops the wait before a retry", async (t) => {
+  const controller = new AbortController();
   const { seen, server, baseUrl } = await serve((response) => {
     response.writeHead(503, { "Content-Type": "application/json" });
-    response.end(JSON.stringify({ error: { code: "origin_overloaded", message: "busy" } }));
+    response.end(JSON.stringify({ error: { code: "origin_overloaded", message: "busy" } }), () => controller.abort());
   });
   t.after(() => server.close());
   const client = new Mapricot({ apiKey: "k", baseUrl });
-  const controller = new AbortController();
   const request = client.route([{ lat: 1, lon: 2 }, { lat: 3, lon: 4 }], { signal: controller.signal });
-  setTimeout(() => controller.abort(), 100);
   await assert.rejects(request, { name: "AbortError" });
   assert.equal(seen.length, 1);
 });
