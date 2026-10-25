@@ -1,12 +1,12 @@
 # Mapricot for JavaScript and TypeScript
 
-The official JavaScript client for the [Mapricot API](https://mapricot.com/): address and place search, reverse geocoding, nearby places, routing, and IP geolocation, with 250,000 free requests every month.
+The official JavaScript client for the [Mapricot API](https://mapricot.com/): address and place search, reverse geocoding, nearby places, routing, and IP geolocation, with 250,000 free requests every 30 days.
 
 ```sh
 npm install mapricot
 ```
 
-It uses the built-in `fetch`, so it has no dependencies and runs in Node.js 20 and later, Deno (as `npm:mapricot`), Bun, Cloudflare Workers, and browsers. Types are included.
+It uses the built-in `fetch`, so it has no dependencies and runs in Node.js 20 and later, Deno (as `npm:mapricot`), Bun, Cloudflare Workers, and browsers as old as Chrome 66, Firefox 57, and Safari 12.1. Types are included.
 
 ## Quick start
 
@@ -44,6 +44,14 @@ Each method returns the API's JSON, typed, with the same field names as the [API
 const nearby = await client.nearby(45.52, -122.68, { category: ["food:coffee_shop"], radius: 1000 });
 const { routes } = await client.route([{ lat: 45.5189, lon: -122.6793 }, { lat: 45.5214, lon: -122.6828 }], { mode: "walk" });
 console.log(routes[0].durationSeconds);
+```
+
+To cancel a request, such as an autocomplete request for text that has since changed, pass an `AbortSignal` as `signal` to any method. The request then rejects with an `AbortError`:
+
+```js
+const controller = new AbortController();
+const request = client.autocomplete("1005 W Burn", { signal: controller.signal });
+controller.abort();
 ```
 
 A route's `polyline` is encoded with six decimal places. Decode it with precision 6, as [decoding a route polyline](https://mapricot.com/guides/polyline-decoder/) shows.
