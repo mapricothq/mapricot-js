@@ -202,7 +202,7 @@ export class Mapricot {
     return this.#request("POST", "/routing/v1/route", {}, signal, { waypoints, ...options });
   }
 
-  /** The areas reachable from a location within 1 to 4 times, each 1 to 120 minutes. */
+  /** The areas reachable from a location within 1 to 4 times, each 1 to 60 minutes. */
   isochrone(
     location: Point,
     minutes: number[],
