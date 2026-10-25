@@ -46,9 +46,17 @@ export interface Leg {
 export interface Route {
   distanceMeters: number;
   durationSeconds: number;
-  /** Encoded polyline with six decimal places of precision. */
-  polyline: string;
+  /** Encoded polyline, with five decimal places unless `geometries` was `polyline6`. Absent for `geojson`. */
+  polyline?: string;
+  /** The path as GeoJSON, when `geometries` was `geojson`. */
+  geometry?: LineString;
   legs: Leg[];
+}
+
+export interface LineString {
+  type: "LineString";
+  /** [longitude, latitude] pairs. */
+  coordinates: [number, number][];
 }
 
 export interface Routes {
@@ -175,7 +183,7 @@ export class Mapricot {
   /** Find a route through 2 to 20 waypoints. */
   route(
     waypoints: Point[],
-    { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle" } = {},
+    { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; geometries?: "polyline" | "polyline6" | "geojson" } = {},
   ): Promise<Routes> {
     return this.#request("POST", "/v1/route", {}, signal, { waypoints, ...options });
   }

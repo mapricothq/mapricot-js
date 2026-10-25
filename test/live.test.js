@@ -38,6 +38,12 @@ test("route", { skip }, async () => {
   assert.ok(routes[0].polyline);
 });
 
+test("route as GeoJSON", { skip }, async () => {
+  const { routes } = await client.route([{ lat: 43.7396, lon: 7.4275 }, { lat: 43.734, lon: 7.4222 }], { geometries: "geojson" });
+  assert.equal(routes[0].geometry.type, "LineString");
+  assert.ok(routes[0].geometry.coordinates.length > 1);
+});
+
 test("ip", { skip }, async () => {
   const location = await client.ip("8.8.8.8");
   assert.equal(location.found, true);
