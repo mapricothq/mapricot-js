@@ -34,7 +34,7 @@ Methods are grouped by product, the same way as the API's paths. Each returns th
 | `client.geocoding.reverse(lat, lon, { limit, lang })` | [`GET /geocoding/v1/reverse`](https://mapricot.com/docs/geocoding/#find-the-address-at-a-point) |
 | `client.places.nearby(lat, lon, { category, radius, limit, lang })` | [`GET /places/v1/nearby`](https://mapricot.com/docs/places/#list-places-around-a-point) |
 | `client.places.get(id, { lang })` | [`GET /places/v1/{id}`](https://mapricot.com/docs/places/#look-up-a-saved-place) |
-| `client.routing.route(waypoints, { mode, geometries })` | [`POST /routing/v1/route`](https://mapricot.com/docs/routing/#get-a-route) |
+| `client.routing.route(waypoints, { mode, geometries, steps, lang })` | [`POST /routing/v1/route`](https://mapricot.com/docs/routing/#get-a-route) |
 | `client.routing.isochrone(location, minutes, { mode })` | [`POST /routing/v1/isochrone`](https://mapricot.com/docs/routing/#get-an-isochrone) |
 | `client.ipGeolocation.lookup(ip)` | [`GET /ip-geolocation/v1/{ip}`](https://mapricot.com/docs/ip-geolocation/#look-up-an-address) |
 | `client.account()` | `GET /account`, which checks a key and is never billed |
@@ -63,6 +63,8 @@ An isochrone is a GeoJSON `FeatureCollection` with one polygon per time, largest
 const area = await client.routing.isochrone({ lat: 45.5189, lon: -122.6793 }, [5, 10], { mode: "walk" });
 map.addSource("reach", { type: "geojson", data: area });
 ```
+
+Pass `steps: true` and each leg's `steps` has its turn-by-turn directions: an `instruction`, its distance and time, and its `lat` and `lon`. They're in English unless you pass `lang`, such as `lang: "fr"`.
 
 If your app shows results, show the credits in each response's `attribution`.
 
