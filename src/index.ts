@@ -76,6 +76,8 @@ export interface Account {
   id: string;
   name: string;
   status: string;
+  createdAt: string;
+  /** @deprecated Use `createdAt`. */
   created_at: string;
 }
 
