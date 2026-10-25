@@ -104,8 +104,7 @@ export interface NearbyOptions {
 }
 
 export interface ClientOptions {
-  /** Defaults to the MAPRICOT_KEY environment variable. */
-  apiKey?: string;
+  apiKey: string;
   baseUrl?: string;
   /** Milliseconds per attempt. */
   timeout?: number;
@@ -135,10 +134,9 @@ export class Mapricot {
   readonly #timeout: number;
   readonly #maxRetries: number;
 
-  constructor(options: ClientOptions = {}) {
-    const apiKey = options.apiKey ?? (globalThis as any).process?.env?.MAPRICOT_KEY;
-    if (!apiKey) throw new Error("Pass apiKey or set MAPRICOT_KEY.");
-    this.#apiKey = apiKey;
+  constructor(options: ClientOptions) {
+    if (!options?.apiKey) throw new Error("Pass apiKey, a Mapricot key.");
+    this.#apiKey = options.apiKey;
     this.#baseUrl = options.baseUrl ?? "https://api.mapricot.com";
     this.#timeout = options.timeout ?? 30_000;
     this.#maxRetries = options.maxRetries ?? 2;

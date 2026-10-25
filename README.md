@@ -10,22 +10,18 @@ It uses the built-in `fetch`, so it has no dependencies and runs in Node.js 20 a
 
 ## Quick start
 
-Create a server key in the [dashboard](https://app.mapricot.com/) and set it as `MAPRICOT_KEY`:
-
-```sh
-export MAPRICOT_KEY="mapricot_sk_…"
-```
+Create a server key in the [dashboard](https://app.mapricot.com/) and pass it to the client. Keep it out of your source code, for example by reading it from an environment variable as here.
 
 ```js
 import { Mapricot } from "mapricot";
 
-const client = new Mapricot();
+const client = new Mapricot({ apiKey: process.env.MAPRICOT_KEY });
 
 const { results } = await client.search("128 SW 3rd Ave, Portland", { limit: 1 });
 console.log(results[0].label, results[0].lat, results[0].lon);
 ```
 
-Pass the key yourself with `new Mapricot({ apiKey: "mapricot_sk_…" })`. In a web page, use a browser key, which works only from the origins you allow, and keep server keys on your server.
+In a web page, use a browser key, which works only from the origins you allow, and keep server keys on your server.
 
 ## Methods
 
@@ -50,7 +46,7 @@ const { routes } = await client.route([{ lat: 45.5189, lon: -122.6793 }, { lat: 
 console.log(routes[0].durationSeconds);
 ```
 
-A route's `polyline` is encoded with six decimal places. Decode it with precision 6, as [decoding a route polyline](https://mapricot.com/docs/polyline/) shows.
+A route's `polyline` is encoded with six decimal places. Decode it with precision 6, as [decoding a route polyline](https://mapricot.com/guides/polyline-decoder/) shows.
 
 If your app shows results, show the credits in each response's `attribution`.
 
