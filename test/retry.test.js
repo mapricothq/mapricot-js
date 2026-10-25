@@ -9,7 +9,7 @@ async function serve(statuses) {
     seen.push(request.url);
     const [status, code] = statuses.shift() ?? [200];
     response.writeHead(status, { "Content-Type": "application/json", "X-Request-Id": "r1" });
-    response.end(JSON.stringify(status === 200 ? { ok: true } : { error: { code, message: code }, request_id: "r1" }));
+    response.end(JSON.stringify(status === 200 ? { ok: true } : { error: { code, message: code }, requestId: "r1" }));
   });
   await new Promise((resolve) => server.listen(0, resolve));
   return { seen, server, baseUrl: `http://localhost:${server.address().port}` };

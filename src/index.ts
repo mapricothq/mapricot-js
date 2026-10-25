@@ -76,7 +76,7 @@ export interface Account {
   id: string;
   name: string;
   status: string;
-  created_at: string;
+  createdAt: string;
 }
 
 export interface Point {
