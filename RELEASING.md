@@ -10,6 +10,6 @@ CI runs every Monday as well as on each push. Its `endpoints` job fails when [th
 
 ## One-time setup
 
-- A repository secret or organization secret `MAPRICOT_KEY`: a server key with the `places`, `routing`, and `ip-geolocation` scopes and a monthly cap, used by the live tests.
+- A repository secret or organization secret `MAPRICOT_KEY`: a server key with the `geocoding`, `places`, `routing`, and `ip-geolocation` scopes and a monthly cap, used by the live tests.
 - A `release` environment in this repository.
 - On npmjs.com, the `mapricot` package with this repository's `release.yml` workflow and `release` environment as its trusted publisher.

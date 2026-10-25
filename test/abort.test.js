@@ -23,7 +23,7 @@ test("a signal cancels a request in progress", async (t) => {
   const client = new Mapricot({ apiKey: "k", baseUrl });
   const request = client.autocomplete("stump", { limit: 5, signal: controller.signal });
   await assert.rejects(request, { name: "AbortError" });
-  assert.deepEqual(seen, ["/v1/autocomplete?q=stump&limit=5"]);
+  assert.deepEqual(seen, ["/geocoding/v1/autocomplete?q=stump&limit=5"]);
 });
 
 test("a signal stops the wait before a retry", async (t) => {
