@@ -44,6 +44,13 @@ test("route as GeoJSON", { skip }, async () => {
   assert.ok(routes[0].geometry.coordinates.length > 1);
 });
 
+test("isochrone", { skip }, async () => {
+  const { features, attribution } = await client.isochrone({ lat: 43.7396, lon: 7.4275 }, [5, 10], { mode: "walk" });
+  assert.deepEqual(features.map((f) => f.properties.minutes), [10, 5]);
+  assert.equal(features[0].geometry.type, "Polygon");
+  assert.ok(attribution.length > 0);
+});
+
 test("ip", { skip }, async () => {
   const location = await client.ip("8.8.8.8");
   assert.equal(location.found, true);
