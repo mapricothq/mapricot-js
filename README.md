@@ -38,26 +38,20 @@ Each method returns the API's JSON, typed, with the same field names as the [API
 | `client.ip(address)` | [`GET /v1/ip/{ip}`](https://mapricot.com/docs/ip-geolocation/#look-up-an-address) |
 | `client.account()` | `GET /v1/account`, which checks a key and is never billed |
 
-`focus` and each waypoint are `{ lat, lon }`. `country` and `category` take an array or a comma-separated string. Every method also takes a `signal`, an `AbortSignal` that cancels the request, such as an autocomplete request for text that has since changed:
-
-```js
-let controller;
-input.addEventListener("input", async () => {
-  controller?.abort();
-  controller = new AbortController();
-  try {
-    const { results } = await client.autocomplete(input.value, { limit: 5, signal: controller.signal });
-    show(results);
-  } catch (error) {
-    if (error.name !== "AbortError") throw error;
-  }
-});
-```
+`focus` and each waypoint are `{ lat, lon }`. `country` and `category` take an array or a comma-separated string.
 
 ```js
 const nearby = await client.nearby(45.52, -122.68, { category: ["food:coffee_shop"], radius: 1000 });
 const { routes } = await client.route([{ lat: 45.5189, lon: -122.6793 }, { lat: 45.5214, lon: -122.6828 }], { mode: "walk" });
 console.log(routes[0].durationSeconds);
+```
+
+To cancel a request, such as an autocomplete request for text that has since changed, pass an `AbortSignal` as `signal` to any method. The request then rejects with an `AbortError`:
+
+```js
+const controller = new AbortController();
+const request = client.autocomplete("1005 W Burn", { signal: controller.signal });
+controller.abort();
 ```
 
 A route's `polyline` is encoded with six decimal places. Decode it with precision 6, as [decoding a route polyline](https://mapricot.com/guides/polyline-decoder/) shows.
