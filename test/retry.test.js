@@ -21,7 +21,7 @@ test("retries 503 and concurrency_exceeded, then succeeds", async (t) => {
   const client = new Mapricot({ apiKey: "k", baseUrl });
   assert.deepEqual(await client.search("x", { focus: { lat: 1, lon: 2 }, country: ["US", "CA"] }), { ok: true });
   assert.equal(seen.length, 3);
-  assert.equal(seen[0], "/v1/search?q=x&focus=1%2C2&country=US%2CCA");
+  assert.equal(seen[0], "/geocoding/v1/search?q=x&focus=1%2C2&country=US%2CCA");
 });
 
 test("doesn't retry credit_exhausted", async (t) => {

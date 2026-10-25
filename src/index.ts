@@ -157,27 +157,27 @@ export class Mapricot {
 
   /** Find addresses and places matching free text. */
   search(q: string, { signal, ...options }: SearchOptions = {}): Promise<Places> {
-    return this.#request("GET", "/v1/search", { q, ...options }, signal);
+    return this.#request("GET", "/geocoding/v1/search", { q, ...options }, signal);
   }
 
   /** Suggest addresses and places as someone types. */
   autocomplete(q: string, { signal, ...options }: SearchOptions = {}): Promise<Places> {
-    return this.#request("GET", "/v1/autocomplete", { q, ...options }, signal);
+    return this.#request("GET", "/geocoding/v1/autocomplete", { q, ...options }, signal);
   }
 
   /** Find the address nearest a coordinate, or the area around it. */
   reverse(lat: number, lon: number, { signal, ...options }: ReverseOptions = {}): Promise<Places> {
-    return this.#request("GET", "/v1/reverse", { lat, lon, ...options }, signal);
+    return this.#request("GET", "/geocoding/v1/reverse", { lat, lon, ...options }, signal);
   }
 
   /** List places around a coordinate, optionally by category. */
   nearby(lat: number, lon: number, { signal, ...options }: NearbyOptions = {}): Promise<Places> {
-    return this.#request("GET", "/v1/nearby", { lat, lon, ...options }, signal);
+    return this.#request("GET", "/places/v1/nearby", { lat, lon, ...options }, signal);
   }
 
   /** Look up one place by its Mapricot ID. */
   place(id: string, { signal, ...options }: RequestOptions & { lang?: string } = {}): Promise<PlaceResult> {
-    return this.#request("GET", `/v1/places/${encodeURIComponent(id)}`, options, signal);
+    return this.#request("GET", `/places/v1/${encodeURIComponent(id)}`, options, signal);
   }
 
   /** Find a route through 2 to 20 waypoints. */
@@ -185,17 +185,17 @@ export class Mapricot {
     waypoints: Point[],
     { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; geometries?: "polyline" | "polyline6" | "geojson" } = {},
   ): Promise<Routes> {
-    return this.#request("POST", "/v1/route", {}, signal, { waypoints, ...options });
+    return this.#request("POST", "/routing/v1/route", {}, signal, { waypoints, ...options });
   }
 
   /** Approximate location of a public IP address. */
   ip(address: string, { signal }: RequestOptions = {}): Promise<IpLocation> {
-    return this.#request("GET", `/v1/ip/${encodeURIComponent(address)}`, {}, signal);
+    return this.#request("GET", `/ip-geolocation/v1/${encodeURIComponent(address)}`, {}, signal);
   }
 
   /** The key's account. Not billed, so it checks a key for free. */
   account({ signal }: RequestOptions = {}): Promise<Account> {
-    return this.#request("GET", "/v1/account", {}, signal);
+    return this.#request("GET", "/account", {}, signal);
   }
 
   async #request<T>(method: string, path: string, params: Params, signal?: AbortSignal, body?: object): Promise<T> {
