@@ -169,52 +169,50 @@ export class Mapricot {
     this.#maxRetries = options.maxRetries ?? 2;
   }
 
-  /** Find addresses and places matching free text. */
-  search(q: string, { signal, ...options }: SearchOptions = {}): Promise<Places> {
-    return this.#request("GET", "/geocoding/v1/search", { q, ...options }, signal);
-  }
+  readonly geocoding = {
+    /** Find addresses and places matching free text. */
+    search: (q: string, { signal, ...options }: SearchOptions = {}): Promise<Places> =>
+      this.#request("GET", "/geocoding/v1/search", { q, ...options }, signal),
 
-  /** Suggest addresses and places as someone types. */
-  autocomplete(q: string, { signal, ...options }: SearchOptions = {}): Promise<Places> {
-    return this.#request("GET", "/geocoding/v1/autocomplete", { q, ...options }, signal);
-  }
+    /** Suggest addresses and places as someone types. */
+    autocomplete: (q: string, { signal, ...options }: SearchOptions = {}): Promise<Places> =>
+      this.#request("GET", "/geocoding/v1/autocomplete", { q, ...options }, signal),
 
-  /** Find the address nearest a coordinate, or the area around it. */
-  reverse(lat: number, lon: number, { signal, ...options }: ReverseOptions = {}): Promise<Places> {
-    return this.#request("GET", "/geocoding/v1/reverse", { lat, lon, ...options }, signal);
-  }
+    /** Find the address nearest a coordinate, or the area around it. */
+    reverse: (lat: number, lon: number, { signal, ...options }: ReverseOptions = {}): Promise<Places> =>
+      this.#request("GET", "/geocoding/v1/reverse", { lat, lon, ...options }, signal),
+  };
 
-  /** List places around a coordinate, optionally by category. */
-  nearby(lat: number, lon: number, { signal, ...options }: NearbyOptions = {}): Promise<Places> {
-    return this.#request("GET", "/places/v1/nearby", { lat, lon, ...options }, signal);
-  }
+  readonly places = {
+    /** List places around a coordinate, optionally by category. */
+    nearby: (lat: number, lon: number, { signal, ...options }: NearbyOptions = {}): Promise<Places> =>
+      this.#request("GET", "/places/v1/nearby", { lat, lon, ...options }, signal),
 
-  /** Look up one place by its Mapricot ID. */
-  place(id: string, { signal, ...options }: RequestOptions & { lang?: string } = {}): Promise<PlaceResult> {
-    return this.#request("GET", `/places/v1/${encodeURIComponent(id)}`, options, signal);
-  }
+    /** Look up one place by its Mapricot ID. */
+    get: (id: string, { signal, ...options }: RequestOptions & { lang?: string } = {}): Promise<PlaceResult> =>
+      this.#request("GET", `/places/v1/${encodeURIComponent(id)}`, options, signal),
+  };
 
-  /** Find a route through 2 to 20 waypoints. */
-  route(
-    waypoints: Point[],
-    { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; geometries?: "polyline" | "polyline6" | "geojson" } = {},
-  ): Promise<Routes> {
-    return this.#request("POST", "/routing/v1/route", {}, signal, { waypoints, ...options });
-  }
+  readonly routing = {
+    /** Find a route through 2 to 20 waypoints. */
+    route: (
+      waypoints: Point[],
+      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; geometries?: "polyline" | "polyline6" | "geojson" } = {},
+    ): Promise<Routes> => this.#request("POST", "/routing/v1/route", {}, signal, { waypoints, ...options }),
 
-  /** The areas reachable from a location within 1 to 4 times, each 1 to 60 minutes. */
-  isochrone(
-    location: Point,
-    minutes: number[],
-    { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle" } = {},
-  ): Promise<Isochrones> {
-    return this.#request("POST", "/routing/v1/isochrone", {}, signal, { location, minutes, ...options });
-  }
+    /** The areas reachable from a location within 1 to 4 times, each 1 to 60 minutes. */
+    isochrone: (
+      location: Point,
+      minutes: number[],
+      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle" } = {},
+    ): Promise<Isochrones> => this.#request("POST", "/routing/v1/isochrone", {}, signal, { location, minutes, ...options }),
+  };
 
-  /** Approximate location of a public IP address. */
-  ip(address: string, { signal }: RequestOptions = {}): Promise<IpLocation> {
-    return this.#request("GET", `/ip-geolocation/v1/${encodeURIComponent(address)}`, {}, signal);
-  }
+  readonly ipGeolocation = {
+    /** Approximate location of a public IP address. */
+    lookup: (ip: string, { signal }: RequestOptions = {}): Promise<IpLocation> =>
+      this.#request("GET", `/ip-geolocation/v1/${encodeURIComponent(ip)}`, {}, signal),
+  };
 
   /** The key's account. Not billed, so it checks a key for free. */
   account({ signal }: RequestOptions = {}): Promise<Account> {

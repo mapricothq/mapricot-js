@@ -21,7 +21,7 @@ test("a signal cancels a request in progress", async (t) => {
     server.close();
   });
   const client = new Mapricot({ apiKey: "k", baseUrl });
-  const request = client.autocomplete("stump", { limit: 5, signal: controller.signal });
+  const request = client.geocoding.autocomplete("stump", { limit: 5, signal: controller.signal });
   await assert.rejects(request, { name: "AbortError" });
   assert.deepEqual(seen, ["/geocoding/v1/autocomplete?q=stump&limit=5"]);
 });
@@ -34,7 +34,7 @@ test("a signal stops the wait before a retry", async (t) => {
   });
   t.after(() => server.close());
   const client = new Mapricot({ apiKey: "k", baseUrl });
-  const request = client.route([{ lat: 1, lon: 2 }, { lat: 3, lon: 4 }], { signal: controller.signal });
+  const request = client.routing.route([{ lat: 1, lon: 2 }, { lat: 3, lon: 4 }], { signal: controller.signal });
   await assert.rejects(request, { name: "AbortError" });
   assert.equal(seen.length, 1);
 });
@@ -43,7 +43,7 @@ test("an aborted signal sends nothing", async (t) => {
   const { seen, server, baseUrl } = await serve(() => {});
   t.after(() => server.close());
   const client = new Mapricot({ apiKey: "k", baseUrl });
-  await assert.rejects(client.ip("8.8.8.8", { signal: AbortSignal.abort() }), { name: "AbortError" });
+  await assert.rejects(client.ipGeolocation.lookup("8.8.8.8", { signal: AbortSignal.abort() }), { name: "AbortError" });
   assert.equal(seen.length, 0);
 });
 
