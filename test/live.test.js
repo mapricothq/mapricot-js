@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { Mapricot, MapricotError } from "../dist/index.js";
 
 const skip = !process.env.MAPRICOT_KEY && "set MAPRICOT_KEY to run tests against the live API";
-const client = !skip && new Mapricot();
+const client = !skip && new Mapricot({ apiKey: process.env.MAPRICOT_KEY });
 
 test("search", { skip }, async () => {
   const { results, attribution } = await client.search("128 SW 3rd Ave, Portland", { country: ["US"], limit: 1 });
