@@ -41,6 +41,18 @@ export interface PlaceResult {
 export interface Leg {
   distanceMeters: number;
   durationSeconds: number;
+  /** Turn-by-turn directions, in order. The last step is the arrival. */
+  steps: Step[];
+}
+
+/** One maneuver, and the stretch from it to the next. */
+export interface Step {
+  instruction: string;
+  distanceMeters: number;
+  durationSeconds: number;
+  /** Where the maneuver is, on the route's path. */
+  lat: number;
+  lon: number;
 }
 
 export interface Route {
@@ -197,7 +209,7 @@ export class Mapricot {
     /** Find a route through 2 to 20 waypoints. */
     route: (
       waypoints: Point[],
-      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; geometries?: "polyline" | "polyline6" | "geojson" } = {},
+      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; geometries?: "polyline" | "polyline6" | "geojson"; lang?: string } = {},
     ): Promise<Routes> => this.#request("POST", "/routing/v1/route", {}, signal, { waypoints, ...options }),
 
     /** The areas reachable from a location within 1 to 4 times, each 1 to 60 minutes. */

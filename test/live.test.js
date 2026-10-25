@@ -36,6 +36,12 @@ test("route", { skip }, async () => {
   const { routes } = await client.routing.route([{ lat: 43.7396, lon: 7.4275 }, { lat: 43.734, lon: 7.4222 }], { mode: "walk" });
   assert.equal(routes[0].legs.length, 1);
   assert.ok(routes[0].polyline);
+  assert.ok(routes[0].legs[0].steps.at(-1).instruction);
+});
+
+test("route steps in French", { skip }, async () => {
+  const { routes } = await client.routing.route([{ lat: 43.7396, lon: 7.4275 }, { lat: 43.734, lon: 7.4222 }], { lang: "fr" });
+  assert.match(routes[0].legs[0].steps.at(-1).instruction, /destination/);
 });
 
 test("route as GeoJSON", { skip }, async () => {
