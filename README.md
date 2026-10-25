@@ -38,7 +38,21 @@ Each method returns the API's JSON, typed, with the same field names as the [API
 | `client.ip(address)` | [`GET /v1/ip/{ip}`](https://mapricot.com/docs/ip-geolocation/#look-up-an-address) |
 | `client.account()` | `GET /v1/account`, which checks a key and is never billed |
 
-`focus` and each waypoint are `{ lat, lon }`. `country` and `category` take an array or a comma-separated string.
+`focus` and each waypoint are `{ lat, lon }`. `country` and `category` take an array or a comma-separated string. Every method also takes a `signal`, an `AbortSignal` that cancels the request, such as an autocomplete request for text that has since changed:
+
+```js
+let controller;
+input.addEventListener("input", async () => {
+  controller?.abort();
+  controller = new AbortController();
+  try {
+    const { results } = await client.autocomplete(input.value, { limit: 5, signal: controller.signal });
+    show(results);
+  } catch (error) {
+    if (error.name !== "AbortError") throw error;
+  }
+});
+```
 
 ```js
 const nearby = await client.nearby(45.52, -122.68, { category: ["food:coffee_shop"], radius: 1000 });

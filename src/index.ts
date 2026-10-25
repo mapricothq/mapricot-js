@@ -84,19 +84,24 @@ export interface Point {
   lon: number;
 }
 
-export interface SearchOptions {
+export interface RequestOptions {
+  /** Cancels the request, such as one for text that has since changed. */
+  signal?: AbortSignal;
+}
+
+export interface SearchOptions extends RequestOptions {
   focus?: Point;
   country?: string | string[];
   limit?: number;
   lang?: string;
 }
 
-export interface ReverseOptions {
+export interface ReverseOptions extends RequestOptions {
   limit?: number;
   lang?: string;
 }
 
-export interface NearbyOptions {
+export interface NearbyOptions extends RequestOptions {
   category?: string | string[];
   radius?: number;
   limit?: number;
@@ -143,46 +148,49 @@ export class Mapricot {
   }
 
   /** Find addresses and places matching free text. */
-  search(q: string, options: SearchOptions = {}): Promise<Places> {
-    return this.#request("GET", "/v1/search", { q, ...options });
+  search(q: string, { signal, ...options }: SearchOptions = {}): Promise<Places> {
+    return this.#request("GET", "/v1/search", { q, ...options }, signal);
   }
 
   /** Suggest addresses and places as someone types. */
-  autocomplete(q: string, options: SearchOptions = {}): Promise<Places> {
-    return this.#request("GET", "/v1/autocomplete", { q, ...options });
+  autocomplete(q: string, { signal, ...options }: SearchOptions = {}): Promise<Places> {
+    return this.#request("GET", "/v1/autocomplete", { q, ...options }, signal);
   }
 
   /** Find the address nearest a coordinate, or the area around it. */
-  reverse(lat: number, lon: number, options: ReverseOptions = {}): Promise<Places> {
-    return this.#request("GET", "/v1/reverse", { lat, lon, ...options });
+  reverse(lat: number, lon: number, { signal, ...options }: ReverseOptions = {}): Promise<Places> {
+    return this.#request("GET", "/v1/reverse", { lat, lon, ...options }, signal);
   }
 
   /** List places around a coordinate, optionally by category. */
-  nearby(lat: number, lon: number, options: NearbyOptions = {}): Promise<Places> {
-    return this.#request("GET", "/v1/nearby", { lat, lon, ...options });
+  nearby(lat: number, lon: number, { signal, ...options }: NearbyOptions = {}): Promise<Places> {
+    return this.#request("GET", "/v1/nearby", { lat, lon, ...options }, signal);
   }
 
   /** Look up one place by its Mapricot ID. */
-  place(id: string, options: { lang?: string } = {}): Promise<PlaceResult> {
-    return this.#request("GET", `/v1/places/${encodeURIComponent(id)}`, options);
+  place(id: string, { signal, ...options }: RequestOptions & { lang?: string } = {}): Promise<PlaceResult> {
+    return this.#request("GET", `/v1/places/${encodeURIComponent(id)}`, options, signal);
   }
 
   /** Find a route through 2 to 20 waypoints. */
-  route(waypoints: Point[], options: { mode?: "drive" | "walk" | "bicycle" } = {}): Promise<Routes> {
-    return this.#request("POST", "/v1/route", {}, { waypoints, ...options });
+  route(
+    waypoints: Point[],
+    { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle" } = {},
+  ): Promise<Routes> {
+    return this.#request("POST", "/v1/route", {}, signal, { waypoints, ...options });
   }
 
   /** Approximate location of a public IP address. */
-  ip(address: string): Promise<IpLocation> {
-    return this.#request("GET", `/v1/ip/${encodeURIComponent(address)}`, {});
+  ip(address: string, { signal }: RequestOptions = {}): Promise<IpLocation> {
+    return this.#request("GET", `/v1/ip/${encodeURIComponent(address)}`, {}, signal);
   }
 
   /** The key's account. Not billed, so it checks a key for free. */
-  account(): Promise<Account> {
-    return this.#request("GET", "/v1/account", {});
+  account({ signal }: RequestOptions = {}): Promise<Account> {
+    return this.#request("GET", "/v1/account", {}, signal);
   }
 
-  async #request<T>(method: string, path: string, params: Params, body?: object): Promise<T> {
+  async #request<T>(method: string, path: string, params: Params, signal?: AbortSignal, body?: object): Promise<T> {
     const url = new URL(path, this.#baseUrl);
     for (const [name, value] of Object.entries(params)) {
       if (value === undefined) continue;
@@ -192,17 +200,19 @@ export class Mapricot {
     if (body) headers["Content-Type"] = "application/json";
 
     for (let attempt = 0; ; attempt++) {
+      const timeout = AbortSignal.timeout(this.#timeout);
       const response = await fetch(url, {
         method,
         headers,
         body: body && JSON.stringify(body),
-        signal: AbortSignal.timeout(this.#timeout),
+        signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
       });
       if (response.ok) return (await response.json()) as T;
 
       const error = await errorFrom(response);
       if (attempt < this.#maxRetries && retryable(error)) {
         await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** attempt));
+        signal?.throwIfAborted();
         continue;
       }
       throw error;

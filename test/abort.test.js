@@ -1,0 +1,50 @@
+import assert from "node:assert/strict";
+import { createServer } from "node:http";
+import { test } from "node:test";
+import { Mapricot } from "../dist/index.js";
+
+async function serve(handler) {
+  const seen = [];
+  const server = createServer((request, response) => {
+    seen.push(request.url);
+    handler(response);
+  });
+  await new Promise((resolve) => server.listen(0, resolve));
+  return { seen, server, baseUrl: `http://localhost:${server.address().port}` };
+}
+
+test("a signal cancels a request in progress", async (t) => {
+  const { seen, server, baseUrl } = await serve(() => {});
+  t.after(() => {
+    server.closeAllConnections();
+    server.close();
+  });
+  const client = new Mapricot({ apiKey: "k", baseUrl });
+  const controller = new AbortController();
+  const request = client.autocomplete("stump", { limit: 5, signal: controller.signal });
+  setTimeout(() => controller.abort(), 50);
+  await assert.rejects(request, { name: "AbortError" });
+  assert.deepEqual(seen, ["/v1/autocomplete?q=stump&limit=5"]);
+});
+
+test("a signal stops the wait before a retry", async (t) => {
+  const { seen, server, baseUrl } = await serve((response) => {
+    response.writeHead(503, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ error: { code: "origin_overloaded", message: "busy" } }));
+  });
+  t.after(() => server.close());
+  const client = new Mapricot({ apiKey: "k", baseUrl });
+  const controller = new AbortController();
+  const request = client.route([{ lat: 1, lon: 2 }, { lat: 3, lon: 4 }], { signal: controller.signal });
+  setTimeout(() => controller.abort(), 100);
+  await assert.rejects(request, { name: "AbortError" });
+  assert.equal(seen.length, 1);
+});
+
+test("an aborted signal sends nothing", async (t) => {
+  const { seen, server, baseUrl } = await serve(() => {});
+  t.after(() => server.close());
+  const client = new Mapricot({ apiKey: "k", baseUrl });
+  await assert.rejects(client.ip("8.8.8.8", { signal: AbortSignal.abort() }), { name: "AbortError" });
+  assert.equal(seen.length, 0);
+});
