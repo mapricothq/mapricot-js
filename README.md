@@ -1,12 +1,12 @@
 # Mapricot for JavaScript and TypeScript
 
-The official JavaScript client for the [Mapricot API](https://mapricot.com/): address and place search, reverse geocoding, nearby places, routing, and IP geolocation, with 250,000 free requests every month.
+The official JavaScript client for the [Mapricot API](https://mapricot.com/): address and place search, reverse geocoding, nearby places, routing, and IP geolocation, with 250,000 free requests every 30 days.
 
 ```sh
 npm install mapricot
 ```
 
-It uses the built-in `fetch`, so it has no dependencies and runs in Node.js 20 and later, Deno (as `npm:mapricot`), Bun, Cloudflare Workers, and browsers. Types are included.
+It uses the built-in `fetch`, so it has no dependencies and runs in Node.js 20 and later, Deno (as `npm:mapricot`), Bun, Cloudflare Workers, and browsers as old as Chrome 66, Firefox 57, and Safari 12.1. Types are included.
 
 ## Quick start
 

@@ -200,24 +200,33 @@ export class Mapricot {
     if (body) headers["Content-Type"] = "application/json";
 
     for (let attempt = 0; ; attempt++) {
-      const timeout = AbortSignal.timeout(this.#timeout);
-      const response = await fetch(url, {
-        method,
-        headers,
-        body: body && JSON.stringify(body),
-        signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
-      });
-      if (response.ok) return (await response.json()) as T;
+      if (signal?.aborted) throw abortReason(signal);
+      // AbortSignal.timeout and AbortSignal.any would do this, but are missing from browsers before 2022 and 2024.
+      const controller = new AbortController();
+      const cancel = () => controller.abort(abortReason(signal!));
+      const timer = setTimeout(() => controller.abort(new DOMException("The request timed out.", "TimeoutError")), this.#timeout);
+      signal?.addEventListener("abort", cancel);
+      let error: MapricotError;
+      try {
+        const response = await fetch(url, { method, headers, body: body && JSON.stringify(body), signal: controller.signal });
+        if (response.ok) return (await response.json()) as T;
+        error = await errorFrom(response);
+      } finally {
+        clearTimeout(timer);
+        signal?.removeEventListener("abort", cancel);
+      }
 
-      const error = await errorFrom(response);
       if (attempt < this.#maxRetries && retryable(error)) {
         await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** attempt));
-        signal?.throwIfAborted();
         continue;
       }
       throw error;
     }
   }
+}
+
+function abortReason(signal: AbortSignal): unknown {
+  return signal.reason ?? new DOMException("The request was cancelled.", "AbortError");
 }
 
 function format(value: string | number | string[] | Point): string {

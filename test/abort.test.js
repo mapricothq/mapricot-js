@@ -46,3 +46,13 @@ test("an aborted signal sends nothing", async (t) => {
   await assert.rejects(client.ip("8.8.8.8", { signal: AbortSignal.abort() }), { name: "AbortError" });
   assert.equal(seen.length, 0);
 });
+
+test("timeout cancels a request that takes too long", async (t) => {
+  const { server, baseUrl } = await serve(() => {});
+  t.after(() => {
+    server.closeAllConnections();
+    server.close();
+  });
+  const client = new Mapricot({ apiKey: "k", baseUrl, timeout: 50 });
+  await assert.rejects(client.account(), { name: "TimeoutError" });
+});
