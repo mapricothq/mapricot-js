@@ -24,6 +24,12 @@ export interface Place {
   lon: number;
   address?: Address;
   categories?: string[];
+  phones?: string[];
+  websites?: string[];
+  socials?: string[];
+  brand?: string;
+  /** OpenStreetMap's `opening_hours` syntax, such as `Mo-Fr 08:00-18:00`. */
+  openingHours?: string;
   distanceMeters?: number;
   source: string;
 }
