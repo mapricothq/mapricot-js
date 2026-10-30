@@ -50,6 +50,13 @@ test("route as GeoJSON", { skip }, async () => {
   assert.ok(routes[0].geometry.coordinates.length > 1);
 });
 
+test("routing.optimize", { skip }, async () => {
+  const stops = [{ lat: 43.7396, lon: 7.4275 }, { lat: 43.7311, lon: 7.4197 }, { lat: 43.7445, lon: 7.431 }, { lat: 43.734, lon: 7.4222 }];
+  const { routes } = await client.routing.optimize(stops);
+  assert.deepEqual(routes[0].waypointOrder, [0, 2, 1, 3]);
+  assert.equal(routes[0].legs.length, 3);
+});
+
 test("isochrone", { skip }, async () => {
   const { features, attribution } = await client.routing.isochrone({ lat: 43.7396, lon: 7.4275 }, [5, 10], { mode: "walk" });
   assert.deepEqual(features.map((f) => f.properties.minutes), [10, 5]);
