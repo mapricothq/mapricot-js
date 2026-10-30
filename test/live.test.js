@@ -17,6 +17,11 @@ test("searchBatch", { skip }, async () => {
   assert.equal(responses[1].error.code, "invalid_request");
 });
 
+test("isochrone with costing options", { skip }, async () => {
+  const { features } = await client.routing.isochrone({ lat: 43.7396, lon: 7.4275 }, [5], { mode: "walk", costing: { walkingSpeed: 3 } });
+  assert.equal(features.length, 1);
+});
+
 test("autocomplete", { skip }, async () => {
   const { results } = await client.geocoding.autocomplete("stumptown", { focus: { lat: 45.52, lon: -122.68 }, limit: 1 });
   assert.match(results[0].name, /Stumptown/);
@@ -61,6 +66,16 @@ test("routing.optimize", { skip }, async () => {
   const { routes } = await client.routing.optimize(stops);
   assert.deepEqual(routes[0].waypointOrder, [0, 2, 1, 3]);
   assert.equal(routes[0].legs.length, 3);
+});
+
+test("route with costing options", { skip }, async () => {
+  const { routes } = await client.routing.route([{ lat: 43.7396, lon: 7.4275 }, { lat: 43.734, lon: 7.4222 }], { mode: "walk", costing: { type: "wheelchair" } });
+  assert.equal(routes[0].legs.length, 1);
+  await assert.rejects(client.routing.route([{ lat: 43.7396, lon: 7.4275 }, { lat: 43.734, lon: 7.4222 }], { mode: "walk", costing: { useTolls: 0 } }), (error) => {
+    assert.ok(error instanceof MapricotError);
+    assert.match(error.message, /costing\.useTolls isn't an option for walk/);
+    return true;
+  });
 });
 
 test("isochrone", { skip }, async () => {
