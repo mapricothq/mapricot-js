@@ -30,6 +30,7 @@ Methods are grouped by product, the same way as the API's paths. Each returns th
 | Method | Endpoint |
 | --- | --- |
 | `client.geocoding.search(q, { focus, country, limit, lang })` | [`GET /geocoding/v1/search`](https://mapricot.com/docs/geocoding/#find-an-address) |
+| `client.geocoding.searchBatch(queries)` | [`POST /geocoding/v1/search/batch`](https://mapricot.com/docs/geocoding/#search-a-list-of-addresses) |
 | `client.geocoding.autocomplete(q, { focus, country, limit, lang })` | [`GET /geocoding/v1/autocomplete`](https://mapricot.com/docs/geocoding/#suggest-as-people-type) |
 | `client.geocoding.reverse(lat, lon, { limit, lang })` | [`GET /geocoding/v1/reverse`](https://mapricot.com/docs/geocoding/#find-the-address-at-a-point) |
 | `client.places.nearby(lat, lon, { category, radius, limit, lang })` | [`GET /places/v1/nearby`](https://mapricot.com/docs/places/#list-places-around-a-point) |
@@ -46,6 +47,13 @@ Methods are grouped by product, the same way as the API's paths. Each returns th
 const nearby = await client.places.nearby(45.52, -122.68, { category: ["food:coffee_shop"], radius: 1000 });
 const { routes } = await client.routing.route([{ lat: 45.5189, lon: -122.6793 }, { lat: 45.5214, lon: -122.6828 }], { mode: "walk" });
 console.log(routes[0].durationSeconds);
+```
+
+`searchBatch` runs up to 100 searches in one request. Each query is an object of `search`'s parameters, and `responses` answers them in the same order, each with `results` and `attribution`, or an `error` with the `code` and `message` that search would get, without rejecting. Each completed search is billed as one request; errors aren't.
+
+```js
+const { responses } = await client.geocoding.searchBatch([{ q: "128 SW 3rd Ave, Portland", limit: 1 }, { q: "10 Downing Street, London", limit: 1 }]);
+for (const response of responses) console.log(response.error?.message ?? response.results[0].label);
 ```
 
 To cancel a request, such as an autocomplete request for text that has since changed, pass an `AbortSignal` as `signal` to any method. The request then rejects with an `AbortError`:

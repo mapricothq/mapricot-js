@@ -11,6 +11,12 @@ test("search", { skip }, async () => {
   assert.ok(attribution.length > 0);
 });
 
+test("searchBatch", { skip }, async () => {
+  const { responses } = await client.geocoding.searchBatch([{ q: "128 SW 3rd Ave, Portland", country: ["US"], limit: 1 }, { q: "" }]);
+  assert.equal(responses[0].results[0].address.locality, "Portland");
+  assert.equal(responses[1].error.code, "invalid_request");
+});
+
 test("autocomplete", { skip }, async () => {
   const { results } = await client.geocoding.autocomplete("stumptown", { focus: { lat: 45.52, lon: -122.68 }, limit: 1 });
   assert.match(results[0].name, /Stumptown/);
