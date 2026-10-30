@@ -39,6 +39,27 @@ export interface Places {
   attribution: Attribution[];
 }
 
+/** One search in a batch, with the same parameters as `geocoding.search`. */
+export interface SearchQuery {
+  q: string;
+  focus?: Point;
+  country?: string | string[];
+  limit?: number;
+  lang?: string;
+}
+
+/** One search's answer in a batch: results and attribution, or the error the search would get on its own, unbilled. */
+export interface SearchResponse {
+  results?: Place[];
+  attribution?: Attribution[];
+  error?: { code: string; message: string };
+}
+
+export interface SearchBatch {
+  /** One per query, in the queries' order. */
+  responses: SearchResponse[];
+}
+
 export interface PlaceResult {
   result: Place;
   attribution: Attribution[];
@@ -191,6 +212,12 @@ export class Mapricot {
     /** Find addresses and places matching free text. */
     search: (q: string, { signal, ...options }: SearchOptions = {}): Promise<Places> =>
       this.#request("GET", "/geocoding/v1/search", { q, ...options }, signal),
+
+    /** Run up to 100 searches in one request. Each completed search is billed as one request. */
+    searchBatch: (queries: SearchQuery[], { signal }: RequestOptions = {}): Promise<SearchBatch> =>
+      this.#request("POST", "/geocoding/v1/search/batch", {}, signal, {
+        queries: queries.map((query) => Object.fromEntries(Object.entries(query).map(([name, value]) => [name, format(value)]))),
+      }),
 
     /** Suggest addresses and places as someone types. */
     autocomplete: (q: string, { signal, ...options }: SearchOptions = {}): Promise<Places> =>

@@ -7,9 +7,14 @@ async function serve(statuses) {
   const seen = [];
   const server = createServer((request, response) => {
     seen.push(request.url);
-    const [status, code] = statuses.shift() ?? [200];
-    response.writeHead(status, { "Content-Type": "application/json", "X-Request-Id": "r1" });
-    response.end(JSON.stringify(status === 200 ? { ok: true } : { error: { code, message: code }, requestId: "r1" }));
+    let body = "";
+    request.on("data", (chunk) => (body += chunk));
+    request.on("end", () => {
+      if (body) seen.push(JSON.parse(body));
+      const [status, code] = statuses.shift() ?? [200];
+      response.writeHead(status, { "Content-Type": "application/json", "X-Request-Id": "r1" });
+      response.end(JSON.stringify(status === 200 ? { ok: true } : { error: { code, message: code }, requestId: "r1" }));
+    });
   });
   await new Promise((resolve) => server.listen(0, resolve));
   return { seen, server, baseUrl: `http://localhost:${server.address().port}` };
@@ -30,4 +35,11 @@ test("doesn't retry credit_exhausted", async (t) => {
   const client = new Mapricot({ apiKey: "k", baseUrl });
   await assert.rejects(client.account(), { status: 429, code: "credit_exhausted", requestId: "r1" });
   assert.equal(seen.length, 1);
+});
+
+test("searchBatch sends queries as search parameters", async (t) => {
+  const { seen, server, baseUrl } = await serve([]);
+  t.after(() => server.close());
+  await new Mapricot({ apiKey: "k", baseUrl }).geocoding.searchBatch([{ q: "x", focus: { lat: 1, lon: 2 }, country: ["US", "CA"], limit: 1 }]);
+  assert.deepEqual(seen, ["/geocoding/v1/search/batch", { queries: [{ q: "x", focus: "1,2", country: "US,CA", limit: "1" }] }]);
 });
