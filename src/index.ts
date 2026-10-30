@@ -83,6 +83,8 @@ export interface Step {
 }
 
 export interface Route {
+  /** From `routing.optimize` only: the indexes of the waypoints you sent, in the order the route visits them. */
+  waypointOrder?: number[];
   distanceMeters: number;
   durationSeconds: number;
   /** Encoded polyline, with five decimal places unless `geometries` was `polyline6`. Absent for `geojson`. */
@@ -244,6 +246,12 @@ export class Mapricot {
       waypoints: Point[],
       { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; geometries?: "polyline" | "polyline6" | "geojson"; steps?: boolean; lang?: string } = {},
     ): Promise<Routes> => this.#request("POST", "/routing/v1/route", {}, signal, { waypoints, ...options }),
+
+    /** Find a fast route through 2 to 20 waypoints, keeping the first and last in place and reordering the rest. */
+    optimize: (
+      waypoints: Point[],
+      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; geometries?: "polyline" | "polyline6" | "geojson"; steps?: boolean; lang?: string } = {},
+    ): Promise<Routes> => this.#request("POST", "/routing/v1/optimize", {}, signal, { waypoints, ...options }),
 
     /** The areas reachable from a location within 1 to 4 times, each 1 to 60 minutes. */
     isochrone: (

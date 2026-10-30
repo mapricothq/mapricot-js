@@ -36,6 +36,7 @@ Methods are grouped by product, the same way as the API's paths. Each returns th
 | `client.places.nearby(lat, lon, { category, radius, limit, lang })` | [`GET /places/v1/nearby`](https://mapricot.com/docs/places/#list-places-around-a-point) |
 | `client.places.get(id, { lang })` | [`GET /places/v1/{id}`](https://mapricot.com/docs/places/#look-up-a-saved-place) |
 | `client.routing.route(waypoints, { mode, geometries, steps, lang })` | [`POST /routing/v1/route`](https://mapricot.com/docs/routing/#get-a-route) |
+| `client.routing.optimize(waypoints, { mode, geometries, steps, lang })` | [`POST /routing/v1/optimize`](https://mapricot.com/docs/routing/#optimize-the-order-of-stops) |
 | `client.routing.isochrone(location, minutes, { mode })` | [`POST /routing/v1/isochrone`](https://mapricot.com/docs/routing/#get-an-isochrone) |
 | `client.ipGeolocation.lookup(ip)` | [`GET /ip-geolocation/v1/{ip}`](https://mapricot.com/docs/ip-geolocation/#look-up-an-address) |
 | `client.account()` | `GET /account`, which checks a key and is never billed |
@@ -64,6 +65,8 @@ controller.abort();
 ```
 
 A route's path comes as an encoded `polyline` with five decimal places, which polyline decoders assume. Pass `geometries: "geojson"` to get it as a GeoJSON `LineString` in `geometry` instead, which maps draw without decoding, or `geometries: "polyline6"` for six decimal places.
+
+`routing.optimize` takes the same options as `routing.route` and returns the route that visits the waypoints in a fast order, keeping the first and last in place. It adds `waypointOrder`: the indexes of your waypoints in visiting order, which `legs` follow. Every pair of waypoints must be within 400 km of each other for `drive`, or 200 km for `walk` and `bicycle`.
 
 An isochrone is a GeoJSON `FeatureCollection` with one polygon per time, largest first, so a map that draws them in order shows the smaller ones on top:
 
