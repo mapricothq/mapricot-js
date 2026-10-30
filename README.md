@@ -77,7 +77,7 @@ map.addSource("reach", { type: "geojson", data: area });
 
 Pass `steps: true` and each leg's `steps` has its turn-by-turn directions: an `instruction`, its distance and time, and its `lat` and `lon`. They're in English unless you pass `lang`, such as `lang: "fr"`.
 
-`costing` changes how a route, optimized route, or isochrone picks its roads, with Valhalla's [costing options](https://mapricot.com/docs/routing/#costing-options) for the mode, such as `{ use_tolls: 0, use_highways: 0 }` to drive avoiding tolls and highways where it can.
+`costing` changes how a route, optimized route, or isochrone picks its roads, with Valhalla's [costing options](https://mapricot.com/docs/routing/#costing-options) for the mode, such as `{ useTolls: 0, useHighways: 0 }` to drive avoiding tolls and highways where it can.
 
 If your app shows results, show the credits in each response's `attribution`.
 

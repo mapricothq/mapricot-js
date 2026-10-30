@@ -18,7 +18,7 @@ test("searchBatch", { skip }, async () => {
 });
 
 test("isochrone with costing options", { skip }, async () => {
-  const { features } = await client.routing.isochrone({ lat: 43.7396, lon: 7.4275 }, [5], { mode: "walk", costing: { walking_speed: 3 } });
+  const { features } = await client.routing.isochrone({ lat: 43.7396, lon: 7.4275 }, [5], { mode: "walk", costing: { walkingSpeed: 3 } });
   assert.equal(features.length, 1);
 });
 
@@ -71,9 +71,9 @@ test("routing.optimize", { skip }, async () => {
 test("route with costing options", { skip }, async () => {
   const { routes } = await client.routing.route([{ lat: 43.7396, lon: 7.4275 }, { lat: 43.734, lon: 7.4222 }], { mode: "walk", costing: { type: "wheelchair" } });
   assert.equal(routes[0].legs.length, 1);
-  await assert.rejects(client.routing.route([{ lat: 43.7396, lon: 7.4275 }, { lat: 43.734, lon: 7.4222 }], { mode: "walk", costing: { use_tolls: 0 } }), (error) => {
+  await assert.rejects(client.routing.route([{ lat: 43.7396, lon: 7.4275 }, { lat: 43.734, lon: 7.4222 }], { mode: "walk", costing: { useTolls: 0 } }), (error) => {
     assert.ok(error instanceof MapricotError);
-    assert.match(error.message, /costing\.use_tolls isn't an option for walk/);
+    assert.match(error.message, /costing\.useTolls isn't an option for walk/);
     return true;
   });
 });

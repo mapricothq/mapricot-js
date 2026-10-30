@@ -65,7 +65,7 @@ export interface PlaceResult {
   attribution: Attribution[];
 }
 
-/** Valhalla's costing options for the mode, by their Valhalla names, such as `{ use_tolls: 0 }`. See https://mapricot.com/docs/routing/#costing-options. */
+/** Valhalla's costing options for the mode, named in camelCase, such as `{ useTolls: 0 }`. See https://mapricot.com/docs/routing/#costing-options. */
 export type Costing = Record<string, number | boolean | string>;
 
 export interface Leg {
