@@ -65,6 +65,9 @@ export interface PlaceResult {
   attribution: Attribution[];
 }
 
+/** Valhalla's costing options for the mode, by their Valhalla names, such as `{ use_tolls: 0 }`. See https://mapricot.com/docs/routing/#costing-options. */
+export type Costing = Record<string, number | boolean | string>;
+
 export interface Leg {
   distanceMeters: number;
   durationSeconds: number;
@@ -244,20 +247,20 @@ export class Mapricot {
     /** Find a route through 2 to 20 waypoints. */
     route: (
       waypoints: Point[],
-      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; geometries?: "polyline" | "polyline6" | "geojson"; steps?: boolean; lang?: string } = {},
+      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; geometries?: "polyline" | "polyline6" | "geojson"; steps?: boolean; lang?: string; costing?: Costing } = {},
     ): Promise<Routes> => this.#request("POST", "/routing/v1/route", {}, signal, { waypoints, ...options }),
 
     /** Find a fast route through 2 to 20 waypoints, keeping the first and last in place and reordering the rest. */
     optimize: (
       waypoints: Point[],
-      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; geometries?: "polyline" | "polyline6" | "geojson"; steps?: boolean; lang?: string } = {},
+      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; geometries?: "polyline" | "polyline6" | "geojson"; steps?: boolean; lang?: string; costing?: Costing } = {},
     ): Promise<Routes> => this.#request("POST", "/routing/v1/optimize", {}, signal, { waypoints, ...options }),
 
     /** The areas reachable from a location within 1 to 4 times, each 1 to 60 minutes. */
     isochrone: (
       location: Point,
       minutes: number[],
-      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle" } = {},
+      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; costing?: Costing } = {},
     ): Promise<Isochrones> => this.#request("POST", "/routing/v1/isochrone", {}, signal, { location, minutes, ...options }),
   };
 
