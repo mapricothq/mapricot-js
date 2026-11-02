@@ -25,7 +25,7 @@ In a web page, use a browser key, which works only from the origins you allow, a
 
 ## Methods
 
-Methods are grouped by product, the same way as the API's paths. Each returns the API's JSON, typed, with the same field names as the [API reference](https://mapricot.com/api-reference/).
+Methods are grouped by product, the same way as the API's paths. Each returns the API's JSON, typed, with the same field names as the [API reference](https://mapricot.com/docs/api-reference/).
 
 | Method | Endpoint |
 | --- | --- |
@@ -96,11 +96,11 @@ try {
 }
 ```
 
-The client retries `503` responses and `429 concurrency_exceeded`, up to twice, waiting longer each time. Errors aren't billed. Set `maxRetries` and `timeout` (milliseconds) in the constructor's options to change this. The [API reference](https://mapricot.com/api-reference/#errors) lists every status.
+The client retries `503` responses and `429 concurrency_exceeded`, up to twice, waiting longer each time. Errors aren't billed. Set `maxRetries` and `timeout` (milliseconds) in the constructor's options to change this. The [API reference](https://mapricot.com/docs/api-reference/#errors) lists every status.
 
 ## Links
 
 - [Mapricot](https://mapricot.com/)
 - [Node.js docs](https://mapricot.com/docs/node/)
-- [API reference](https://mapricot.com/api-reference/)
+- [API reference](https://mapricot.com/docs/api-reference/)
 - [Pricing](https://mapricot.com/pricing/)
