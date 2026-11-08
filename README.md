@@ -37,7 +37,7 @@ Methods are grouped by product, the same way as the API's paths. Each returns th
 | `client.places.get(id, { lang })` | [`GET /places/v1/{id}`](https://mapricot.com/docs/places/#look-up-a-saved-place) |
 | `client.routing.route(waypoints, { mode, geometries, steps, lang, costing })` | [`POST /routing/v1/route`](https://mapricot.com/docs/routing/#get-a-route) |
 | `client.routing.optimize(waypoints, { mode, geometries, steps, lang, costing })` | [`POST /routing/v1/optimize`](https://mapricot.com/docs/routing/#optimize-the-order-of-stops) |
-| `client.routing.isochrone(location, minutes, { mode, costing })` | [`POST /routing/v1/isochrone`](https://mapricot.com/docs/routing/#get-an-isochrone) |
+| `client.routing.isochrone(location, minutes, { mode, costing, generalize })` | [`POST /routing/v1/isochrone`](https://mapricot.com/docs/routing/#get-an-isochrone) |
 | `client.ipGeolocation.lookup(ip)` | [`GET /ip-geolocation/v1/{ip}`](https://mapricot.com/docs/ip-geolocation/#look-up-an-address) |
 | `client.account()` | `GET /account`, which checks a key and is never billed |
 
@@ -74,6 +74,8 @@ An isochrone is a GeoJSON `FeatureCollection` with one polygon per time, largest
 const area = await client.routing.isochrone({ lat: 45.5189, lon: -122.6793 }, [5, 10], { mode: "walk" });
 map.addSource("reach", { type: "geojson", data: area });
 ```
+
+`generalize` smooths each outline to within that many meters, from 10 to 5000, so it has fewer points. The API picks it from the travel time when you leave it out. A long drive's outlines are detailed and large, and `generalize: 300` makes them much smaller while keeping their shape at city scale.
 
 Pass `steps: true` and each leg's `steps` has its turn-by-turn directions: an `instruction`, its distance and time, and its `lat` and `lon`. They're in English unless you pass `lang`, such as `lang: "fr"`.
 

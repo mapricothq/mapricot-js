@@ -260,7 +260,7 @@ export class Mapricot {
     isochrone: (
       location: Point,
       minutes: number[],
-      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; costing?: Costing } = {},
+      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; costing?: Costing; generalize?: number } = {},
     ): Promise<Isochrones> => this.#request("POST", "/routing/v1/isochrone", {}, signal, { location, minutes, ...options }),
   };
 

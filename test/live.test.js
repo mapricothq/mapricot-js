@@ -78,6 +78,13 @@ test("route with costing options", { skip }, async () => {
   });
 });
 
+test("isochrone with generalize", { skip }, async () => {
+  const location = { lat: 43.7396, lon: 7.4275 };
+  const detailed = await client.routing.isochrone(location, [10], { mode: "walk" });
+  const smooth = await client.routing.isochrone(location, [10], { mode: "walk", generalize: 300 });
+  assert.ok(JSON.stringify(smooth.features[0].geometry).length < JSON.stringify(detailed.features[0].geometry).length);
+});
+
 test("isochrone", { skip }, async () => {
   const { features, attribution } = await client.routing.isochrone({ lat: 43.7396, lon: 7.4275 }, [5, 10], { mode: "walk" });
   assert.deepEqual(features.map((f) => f.properties.minutes), [10, 5]);
