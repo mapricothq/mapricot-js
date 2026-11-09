@@ -23,7 +23,7 @@ test("searchBatch", { skip }, async () => {
 });
 
 test("isochrone with costing options", { skip }, async () => {
-  const { features } = await client.routing.isochrone({ lat: 43.7396, lon: 7.4275 }, [5], { mode: "walk", costing: { walkingSpeed: 3 } });
+  const { features } = await client.routing.isochrone({ location: { lat: 43.7396, lon: 7.4275 }, minutes: [5], mode: "walk", costing: { walkingSpeed: 3 } });
   assert.equal(features.length, 1);
 });
 
@@ -33,12 +33,12 @@ test("autocomplete", { skip }, async () => {
 });
 
 test("reverse", { skip }, async () => {
-  const { results } = await client.geocoding.reverse(45.5217, -122.6733, { limit: 1 });
+  const { results } = await client.geocoding.reverse({ lat: 45.5217, lon: -122.6733, limit: 1 });
   assert.equal(typeof results[0].distanceMeters, "number");
 });
 
 test("nearby", { skip }, async () => {
-  const { results } = await client.places.nearby(45.52, -122.68, { category: ["food:coffee_shop"], radius: 1000, limit: 1 });
+  const { results } = await client.places.nearby({ lat: 45.52, lon: -122.68, category: ["food:coffee_shop"], radius: 1000, limit: 1 });
   assert.ok(results[0].categories.includes("food:coffee_shop"));
 });
 
@@ -85,13 +85,13 @@ test("route with costing options", { skip }, async () => {
 
 test("isochrone with generalize", { skip }, async () => {
   const location = { lat: 43.7396, lon: 7.4275 };
-  const detailed = await client.routing.isochrone(location, [10], { mode: "walk" });
-  const smooth = await client.routing.isochrone(location, [10], { mode: "walk", generalize: 300 });
+  const detailed = await client.routing.isochrone({ location, minutes: [10], mode: "walk" });
+  const smooth = await client.routing.isochrone({ location, minutes: [10], mode: "walk", generalize: 300 });
   assert.ok(JSON.stringify(smooth.features[0].geometry).length < JSON.stringify(detailed.features[0].geometry).length);
 });
 
 test("isochrone", { skip }, async () => {
-  const { features, attribution } = await client.routing.isochrone({ lat: 43.7396, lon: 7.4275 }, [5, 10], { mode: "walk" });
+  const { features, attribution } = await client.routing.isochrone({ location: { lat: 43.7396, lon: 7.4275 }, minutes: [5, 10], mode: "walk" });
   assert.deepEqual(features.map((f) => f.properties.minutes), [10, 5]);
   assert.equal(features[0].geometry.type, "Polygon");
   assert.ok(attribution.length > 0);
