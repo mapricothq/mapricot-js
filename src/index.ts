@@ -264,18 +264,14 @@ export class Mapricot {
       this.#request("GET", "/geocoding/v1/autocomplete", { q, ...options }, signal),
 
     /** Find the address nearest a coordinate, or the area around it. */
-    reverse: (...args: [query: Point & ReverseOptions]): Promise<Places> => {
-      const { lat, lon, signal, ...options } = point<Point & ReverseOptions>(args);
-      return this.#request("GET", "/geocoding/v1/reverse", { lat, lon, ...options }, signal);
-    },
+    reverse: ({ lat, lon, signal, ...options }: Point & ReverseOptions): Promise<Places> =>
+      this.#request("GET", "/geocoding/v1/reverse", { lat, lon, ...options }, signal),
   };
 
   readonly places = {
     /** List places around a coordinate, optionally by category. */
-    nearby: (...args: [query: Point & NearbyOptions]): Promise<Places> => {
-      const { lat, lon, signal, ...options } = point<Point & NearbyOptions>(args);
-      return this.#request("GET", "/places/v1/nearby", { lat, lon, ...options }, signal);
-    },
+    nearby: ({ lat, lon, signal, ...options }: Point & NearbyOptions): Promise<Places> =>
+      this.#request("GET", "/places/v1/nearby", { lat, lon, ...options }, signal),
 
     /** Look up one place by its Mapricot ID. */
     get: (id: string, { signal, ...options }: PlaceOptions = {}): Promise<PlaceResult> =>
@@ -296,11 +292,8 @@ export class Mapricot {
     ): Promise<Routes> => this.#request("POST", "/routing/v1/optimize", {}, signal, { waypoints, ...options }),
 
     /** The areas reachable from a location within 1 to 4 times, each 1 to 60 minutes. */
-    isochrone: (...args: [query: IsochroneQuery]): Promise<Isochrones> => {
-      const [query, minutes, options] = args as unknown[];
-      const { location, signal, ...rest } = (Array.isArray(minutes) ? { ...(options as object), location: query, minutes } : query) as IsochroneQuery;
-      return this.#request("POST", "/routing/v1/isochrone", {}, signal, { location, ...rest });
-    },
+    isochrone: ({ signal, ...body }: IsochroneQuery): Promise<Isochrones> =>
+      this.#request("POST", "/routing/v1/isochrone", {}, signal, body),
   };
 
   readonly ipGeolocation = {
@@ -347,13 +340,6 @@ export class Mapricot {
       throw error;
     }
   }
-}
-
-// Before 0.16.0, reverse and nearby took lat and lon as two numbers, and isochrone its location and minutes on their
-// own. Code that loads the client's latest release still calls them that way, so those calls still work.
-function point<T>(args: unknown[]): T {
-  const [lat, lon, options] = args;
-  return (typeof lat === "number" ? { ...(options as object), lat, lon } : lat) as T;
 }
 
 function abortReason(signal: AbortSignal): unknown {
