@@ -51,7 +51,7 @@ export interface AddressParts {
   postalCode?: string;
 }
 
-/** One search in a batch, with the same parameters as `geocoding.search`: `q`, or an address in parts. */
+/** A search's parameters: `q`, or an address in parts, with the options. */
 export interface SearchQuery extends AddressParts {
   q?: string;
   focus?: Point;
@@ -226,9 +226,11 @@ export class Mapricot {
   }
 
   readonly geocoding = {
-    /** Find addresses and places matching free text, or an address given in parts. */
-    search: (query: string | AddressParts, { signal, ...options }: SearchOptions = {}): Promise<Places> =>
-      this.#request("GET", "/geocoding/v1/search", { ...(typeof query === "string" ? { q: query } : query), ...options }, signal),
+    /** Find addresses and places matching free text, or an address given in parts in one object with the options. */
+    search: (query: string | (SearchQuery & RequestOptions), options: SearchOptions = {}): Promise<Places> => {
+      const { signal, ...params } = { ...(typeof query === "string" ? { q: query } : query), ...options };
+      return this.#request("GET", "/geocoding/v1/search", params, signal);
+    },
 
     /** Run up to 100 searches in one request. Each completed search is billed as one request. */
     searchBatch: (queries: SearchQuery[], { signal }: RequestOptions = {}): Promise<SearchBatch> =>

@@ -56,3 +56,8 @@ test("timeout cancels a request that takes too long", async (t) => {
   const client = new Mapricot({ apiKey: "k", baseUrl, timeout: 50 });
   await assert.rejects(client.account(), { name: "TimeoutError" });
 });
+
+test("a search by parts takes its signal in the same object", async () => {
+  const client = new Mapricot({ apiKey: "k", baseUrl: "http://localhost:9" });
+  await assert.rejects(client.geocoding.search({ address: "10 Downing Street", signal: AbortSignal.abort() }), { name: "AbortError" });
+});
