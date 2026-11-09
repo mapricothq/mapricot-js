@@ -50,3 +50,18 @@ test("searchBatch sends queries as search parameters", async (t) => {
   await new Mapricot({ apiKey: "k", baseUrl }).geocoding.searchBatch([{ q: "x", focus: { lat: 1, lon: 2 }, country: ["US", "CA"], limit: 1 }, { address: "10 Downing Street", locality: "London" }]);
   assert.deepEqual(seen, ["/geocoding/v1/search/batch", { queries: [{ q: "x", focus: "1,2", country: "US,CA", limit: "1" }, { address: "10 Downing Street", locality: "London" }] }]);
 });
+
+test("reverse, nearby, and isochrone take one object", async (t) => {
+  const { seen, server, baseUrl } = await serve([]);
+  t.after(() => server.close());
+  const client = new Mapricot({ apiKey: "k", baseUrl });
+  await client.geocoding.reverse({ lat: 1, lon: 2, limit: 1 });
+  await client.places.nearby({ lon: 2, lat: 1, radius: 5 });
+  await client.routing.isochrone({ location: { lat: 1, lon: 2 }, minutes: [5], mode: "walk" });
+  assert.deepEqual(seen, [
+    "/geocoding/v1/reverse?lat=1&lon=2&limit=1",
+    "/places/v1/nearby?lat=1&lon=2&radius=5",
+    "/routing/v1/isochrone",
+    { location: { lat: 1, lon: 2 }, minutes: [5], mode: "walk" },
+  ]);
+});

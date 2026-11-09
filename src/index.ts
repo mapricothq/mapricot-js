@@ -186,6 +186,27 @@ export interface NearbyOptions extends RequestOptions {
   lang?: string;
 }
 
+export interface PlaceOptions extends RequestOptions {
+  lang?: string;
+}
+
+export interface RouteOptions extends RequestOptions {
+  mode?: "drive" | "walk" | "bicycle";
+  geometries?: "polyline" | "polyline6" | "geojson";
+  steps?: boolean;
+  lang?: string;
+  costing?: Costing;
+}
+
+export interface IsochroneQuery extends RequestOptions {
+  location: Point;
+  /** 1 to 4 times, each 1 to 60 minutes. */
+  minutes: number[];
+  mode?: "drive" | "walk" | "bicycle";
+  costing?: Costing;
+  generalize?: number;
+}
+
 export interface ClientOptions {
   apiKey: string;
   baseUrl?: string;
@@ -243,17 +264,17 @@ export class Mapricot {
       this.#request("GET", "/geocoding/v1/autocomplete", { q, ...options }, signal),
 
     /** Find the address nearest a coordinate, or the area around it. */
-    reverse: (lat: number, lon: number, { signal, ...options }: ReverseOptions = {}): Promise<Places> =>
+    reverse: ({ lat, lon, signal, ...options }: Point & ReverseOptions): Promise<Places> =>
       this.#request("GET", "/geocoding/v1/reverse", { lat, lon, ...options }, signal),
   };
 
   readonly places = {
     /** List places around a coordinate, optionally by category. */
-    nearby: (lat: number, lon: number, { signal, ...options }: NearbyOptions = {}): Promise<Places> =>
+    nearby: ({ lat, lon, signal, ...options }: Point & NearbyOptions): Promise<Places> =>
       this.#request("GET", "/places/v1/nearby", { lat, lon, ...options }, signal),
 
     /** Look up one place by its Mapricot ID. */
-    get: (id: string, { signal, ...options }: RequestOptions & { lang?: string } = {}): Promise<PlaceResult> =>
+    get: (id: string, { signal, ...options }: PlaceOptions = {}): Promise<PlaceResult> =>
       this.#request("GET", `/places/v1/${encodeURIComponent(id)}`, options, signal),
   };
 
@@ -261,21 +282,18 @@ export class Mapricot {
     /** Find a route through 2 to 20 waypoints. */
     route: (
       waypoints: Point[],
-      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; geometries?: "polyline" | "polyline6" | "geojson"; steps?: boolean; lang?: string; costing?: Costing } = {},
+      { signal, ...options }: RouteOptions = {},
     ): Promise<Routes> => this.#request("POST", "/routing/v1/route", {}, signal, { waypoints, ...options }),
 
     /** Find a fast route through 2 to 20 waypoints, keeping the first and last in place and reordering the rest. */
     optimize: (
       waypoints: Point[],
-      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; geometries?: "polyline" | "polyline6" | "geojson"; steps?: boolean; lang?: string; costing?: Costing } = {},
+      { signal, ...options }: RouteOptions = {},
     ): Promise<Routes> => this.#request("POST", "/routing/v1/optimize", {}, signal, { waypoints, ...options }),
 
     /** The areas reachable from a location within 1 to 4 times, each 1 to 60 minutes. */
-    isochrone: (
-      location: Point,
-      minutes: number[],
-      { signal, ...options }: RequestOptions & { mode?: "drive" | "walk" | "bicycle"; costing?: Costing; generalize?: number } = {},
-    ): Promise<Isochrones> => this.#request("POST", "/routing/v1/isochrone", {}, signal, { location, minutes, ...options }),
+    isochrone: ({ signal, ...body }: IsochroneQuery): Promise<Isochrones> =>
+      this.#request("POST", "/routing/v1/isochrone", {}, signal, body),
   };
 
   readonly ipGeolocation = {

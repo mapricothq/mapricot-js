@@ -32,19 +32,19 @@ Methods are grouped by product, the same way as the API's paths. Each returns th
 | `client.geocoding.search(q, { focus, country, limit, lang })`, or `client.geocoding.search({ address, locality, county, region, postalCode, focus, country, limit, lang })` | [`GET /geocoding/v1/search`](https://mapricot.com/docs/geocoding/#find-an-address) |
 | `client.geocoding.searchBatch(queries)` | [`POST /geocoding/v1/search/batch`](https://mapricot.com/docs/geocoding/#search-a-list-of-addresses) |
 | `client.geocoding.autocomplete(q, { focus, country, limit, lang })` | [`GET /geocoding/v1/autocomplete`](https://mapricot.com/docs/geocoding/#suggest-as-people-type) |
-| `client.geocoding.reverse(lat, lon, { limit, lang })` | [`GET /geocoding/v1/reverse`](https://mapricot.com/docs/geocoding/#find-the-address-at-a-point) |
-| `client.places.nearby(lat, lon, { category, radius, limit, lang })` | [`GET /places/v1/nearby`](https://mapricot.com/docs/places/#list-places-around-a-point) |
+| `client.geocoding.reverse({ lat, lon, limit, lang })` | [`GET /geocoding/v1/reverse`](https://mapricot.com/docs/geocoding/#find-the-address-at-a-point) |
+| `client.places.nearby({ lat, lon, category, radius, limit, lang })` | [`GET /places/v1/nearby`](https://mapricot.com/docs/places/#list-places-around-a-point) |
 | `client.places.get(id, { lang })` | [`GET /places/v1/{id}`](https://mapricot.com/docs/places/#look-up-a-saved-place) |
 | `client.routing.route(waypoints, { mode, geometries, steps, lang, costing })` | [`POST /routing/v1/route`](https://mapricot.com/docs/routing/#get-a-route) |
 | `client.routing.optimize(waypoints, { mode, geometries, steps, lang, costing })` | [`POST /routing/v1/optimize`](https://mapricot.com/docs/routing/#optimize-the-order-of-stops) |
-| `client.routing.isochrone(location, minutes, { mode, costing, generalize })` | [`POST /routing/v1/isochrone`](https://mapricot.com/docs/routing/#get-an-isochrone) |
+| `client.routing.isochrone({ location, minutes, mode, costing, generalize })` | [`POST /routing/v1/isochrone`](https://mapricot.com/docs/routing/#get-an-isochrone) |
 | `client.ipGeolocation.lookup(ip)` | [`GET /ip-geolocation/v1/{ip}`](https://mapricot.com/docs/ip-geolocation/#look-up-an-address) |
 | `client.account()` | `GET /account`, which checks a key and is never billed |
 
 `focus` and each waypoint are `{ lat, lon }`. `country` and `category` take an array or a comma-separated string.
 
 ```js
-const nearby = await client.places.nearby(45.52, -122.68, { category: ["food:coffee_shop"], radius: 1000 });
+const nearby = await client.places.nearby({ lat: 45.52, lon: -122.68, category: ["food:coffee_shop"], radius: 1000 });
 const { routes } = await client.routing.route([{ lat: 45.5189, lon: -122.6793 }, { lat: 45.5214, lon: -122.6828 }], { mode: "walk" });
 console.log(routes[0].durationSeconds);
 ```
@@ -82,7 +82,7 @@ A route's path comes as an encoded `polyline` with five decimal places, which po
 An isochrone is a GeoJSON `FeatureCollection` with one polygon per time, largest first, so a map that draws them in order shows the smaller ones on top:
 
 ```js
-const area = await client.routing.isochrone({ lat: 45.5189, lon: -122.6793 }, [5, 10], { mode: "walk" });
+const area = await client.routing.isochrone({ location: { lat: 45.5189, lon: -122.6793 }, minutes: [5, 10], mode: "walk" });
 map.addSource("reach", { type: "geojson", data: area });
 ```
 
