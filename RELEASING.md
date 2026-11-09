@@ -4,6 +4,8 @@ Bump the version in `package.json`, following [semantic versioning](https://semv
 
 If the release workflow fails, fix the cause and re-run it from the Actions tab.
 
+The website's docs, guides, and demos load a fixed version of the client from jsDelivr, so they don't change when it releases. To move them to a new release, change `js` in the website's [`clients.json`](https://github.com/mapricothq/mapricot/blob/main/website/src/_data/clients.json), and update any examples the release breaks.
+
 ## Keeping up with the API
 
 CI runs every Monday as well as on each push. Its `endpoints` job fails when [the API's OpenAPI description](https://api.mapricot.com/openapi.json) lists an endpoint this client has no method for, and its tests fail when a live response changes. Add or fix the method and its test, and release a new minor version. A new endpoint is added to every Mapricot SDK at the same time.
