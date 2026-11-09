@@ -29,7 +29,7 @@ Methods are grouped by product, the same way as the API's paths. Each returns th
 
 | Method | Endpoint |
 | --- | --- |
-| `client.geocoding.search(q, { focus, country, limit, lang })` | [`GET /geocoding/v1/search`](https://mapricot.com/docs/geocoding/#find-an-address) |
+| `client.geocoding.search(q or { address, locality, county, region, postalCode }, { focus, country, limit, lang })` | [`GET /geocoding/v1/search`](https://mapricot.com/docs/geocoding/#find-an-address) |
 | `client.geocoding.searchBatch(queries)` | [`POST /geocoding/v1/search/batch`](https://mapricot.com/docs/geocoding/#search-a-list-of-addresses) |
 | `client.geocoding.autocomplete(q, { focus, country, limit, lang })` | [`GET /geocoding/v1/autocomplete`](https://mapricot.com/docs/geocoding/#suggest-as-people-type) |
 | `client.geocoding.reverse(lat, lon, { limit, lang })` | [`GET /geocoding/v1/reverse`](https://mapricot.com/docs/geocoding/#find-the-address-at-a-point) |
@@ -49,7 +49,13 @@ const { routes } = await client.routing.route([{ lat: 45.5189, lon: -122.6793 },
 console.log(routes[0].durationSeconds);
 ```
 
-`searchBatch` runs up to 100 searches in one request. Each query is an object of `search`'s parameters, and `responses` answers them in the same order, each with `results` and `attribution`, or an `error` with the `code` and `message` that search would get, without rejecting. Each completed search is billed as one request; errors aren't.
+When you already have an address in parts, such as a spreadsheet's columns, pass them in place of the text. Search ignores a blank part:
+
+```js
+const { results } = await client.geocoding.search({ address: "10 Downing Street", locality: "London", postalCode: "SW1A 2AA" }, { country: "GB" });
+```
+
+`searchBatch` runs up to 100 searches in one request. Each query is an object of `search`'s parameters, with `q` or the address parts, and `responses` answers them in the same order, each with `results` and `attribution`, or an `error` with the `code` and `message` that search would get, without rejecting. Each completed search is billed as one request; errors aren't.
 
 ```js
 const { responses } = await client.geocoding.searchBatch([{ q: "128 SW 3rd Ave, Portland", limit: 1 }, { q: "10 Downing Street, London", limit: 1 }]);

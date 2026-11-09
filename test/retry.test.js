@@ -29,6 +29,13 @@ test("retries 503 and concurrency_exceeded, then succeeds", async (t) => {
   assert.equal(seen[0], "/geocoding/v1/search?q=x&focus=1%2C2&country=US%2CCA");
 });
 
+test("search sends an address in parts in place of q", async (t) => {
+  const { seen, server, baseUrl } = await serve([]);
+  t.after(() => server.close());
+  await new Mapricot({ apiKey: "k", baseUrl }).geocoding.search({ address: "10 Downing Street", postalCode: "SW1A 2AA" }, { country: "GB" });
+  assert.equal(seen[0], "/geocoding/v1/search?address=10+Downing+Street&postalCode=SW1A+2AA&country=GB");
+});
+
 test("doesn't retry credit_exhausted", async (t) => {
   const { seen, server, baseUrl } = await serve([[429, "credit_exhausted"]]);
   t.after(() => server.close());
@@ -40,6 +47,6 @@ test("doesn't retry credit_exhausted", async (t) => {
 test("searchBatch sends queries as search parameters", async (t) => {
   const { seen, server, baseUrl } = await serve([]);
   t.after(() => server.close());
-  await new Mapricot({ apiKey: "k", baseUrl }).geocoding.searchBatch([{ q: "x", focus: { lat: 1, lon: 2 }, country: ["US", "CA"], limit: 1 }]);
-  assert.deepEqual(seen, ["/geocoding/v1/search/batch", { queries: [{ q: "x", focus: "1,2", country: "US,CA", limit: "1" }] }]);
+  await new Mapricot({ apiKey: "k", baseUrl }).geocoding.searchBatch([{ q: "x", focus: { lat: 1, lon: 2 }, country: ["US", "CA"], limit: 1 }, { address: "10 Downing Street", locality: "London" }]);
+  assert.deepEqual(seen, ["/geocoding/v1/search/batch", { queries: [{ q: "x", focus: "1,2", country: "US,CA", limit: "1" }, { address: "10 Downing Street", locality: "London" }] }]);
 });
