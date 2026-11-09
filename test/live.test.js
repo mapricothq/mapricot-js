@@ -11,6 +11,11 @@ test("search", { skip }, async () => {
   assert.ok(attribution.length > 0);
 });
 
+test("search by address parts", { skip }, async () => {
+  const { results } = await client.geocoding.search({ address: "128 SW 3rd Ave", locality: "Portland" }, { country: ["US"], limit: 1 });
+  assert.equal(results[0].address.locality, "Portland");
+});
+
 test("searchBatch", { skip }, async () => {
   const { responses } = await client.geocoding.searchBatch([{ q: "128 SW 3rd Ave, Portland", country: ["US"], limit: 1 }, { q: "" }]);
   assert.equal(responses[0].results[0].address.locality, "Portland");

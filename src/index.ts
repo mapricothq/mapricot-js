@@ -39,9 +39,21 @@ export interface Places {
   attribution: Attribution[];
 }
 
-/** One search in a batch, with the same parameters as `geocoding.search`. */
-export interface SearchQuery {
-  q: string;
+/** An address in parts, such as a spreadsheet's columns, which search takes in place of free text. */
+export interface AddressParts {
+  /** The street line: house number, street, and any unit or building. */
+  address?: string;
+  /** The town or city. */
+  locality?: string;
+  county?: string;
+  /** The state, province, or region. */
+  region?: string;
+  postalCode?: string;
+}
+
+/** One search in a batch, with the same parameters as `geocoding.search`: `q`, or an address in parts. */
+export interface SearchQuery extends AddressParts {
+  q?: string;
   focus?: Point;
   country?: string | string[];
   limit?: number;
@@ -214,9 +226,9 @@ export class Mapricot {
   }
 
   readonly geocoding = {
-    /** Find addresses and places matching free text. */
-    search: (q: string, { signal, ...options }: SearchOptions = {}): Promise<Places> =>
-      this.#request("GET", "/geocoding/v1/search", { q, ...options }, signal),
+    /** Find addresses and places matching free text, or an address given in parts. */
+    search: (query: string | AddressParts, { signal, ...options }: SearchOptions = {}): Promise<Places> =>
+      this.#request("GET", "/geocoding/v1/search", { ...(typeof query === "string" ? { q: query } : query), ...options }, signal),
 
     /** Run up to 100 searches in one request. Each completed search is billed as one request. */
     searchBatch: (queries: SearchQuery[], { signal }: RequestOptions = {}): Promise<SearchBatch> =>
