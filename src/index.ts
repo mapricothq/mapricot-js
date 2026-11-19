@@ -16,7 +16,8 @@ export interface Address {
 }
 
 export interface Place {
-  id: string;
+  /** Missing on an estimated address, which isn't a stored place. */
+  id?: string;
   type: string;
   name: string;
   label: string;
@@ -31,6 +32,8 @@ export interface Place {
   /** OpenStreetMap's `opening_hours` syntax, such as `Mo-Fr 08:00-18:00`. */
   openingHours?: string;
   distanceMeters?: number;
+  /** True for an address estimated between the known house numbers on either side of it on its street. */
+  interpolated?: boolean;
   source: string;
 }
 
