@@ -16,7 +16,8 @@ export interface Address {
 }
 
 export interface Place {
-  id: string;
+  /** Missing on an estimated address, which isn't a stored place. */
+  id?: string;
   type: string;
   name: string;
   label: string;
@@ -31,6 +32,8 @@ export interface Place {
   /** OpenStreetMap's `opening_hours` syntax, such as `Mo-Fr 08:00-18:00`. */
   openingHours?: string;
   distanceMeters?: number;
+  /** True for an address estimated between the known house numbers on either side of it on its street. */
+  interpolated?: boolean;
   source: string;
 }
 
@@ -73,7 +76,7 @@ export interface SearchBatch {
 }
 
 export interface PlaceResult {
-  result: Place;
+  result: Place & { id: string };
   attribution: Attribution[];
 }
 
@@ -274,8 +277,12 @@ export class Mapricot {
       this.#request("GET", "/places/v1/nearby", { lat, lon, ...options }, signal),
 
     /** Look up one place by its Mapricot ID. */
-    get: (id: string, { signal, ...options }: PlaceOptions = {}): Promise<PlaceResult> =>
-      this.#request("GET", `/places/v1/${encodeURIComponent(id)}`, options, signal),
+    get: (id: string, { signal, ...options }: PlaceOptions = {}): Promise<PlaceResult> => {
+      if (typeof id !== "string" || id === "") {
+        return Promise.reject(new TypeError("places.get needs a place ID; an estimated address has none, so search again to find it"));
+      }
+      return this.#request("GET", `/places/v1/${encodeURIComponent(id)}`, options, signal);
+    },
   };
 
   readonly routing = {
