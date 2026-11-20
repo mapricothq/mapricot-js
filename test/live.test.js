@@ -44,6 +44,7 @@ test("nearby", { skip }, async () => {
 
 test("places.get", { skip }, async () => {
   const { results } = await client.geocoding.search("Pioneer Courthouse Square, Portland", { limit: 1 });
+  assert.ok(results[0].id, "the search result has no id");
   const { result } = await client.places.get(results[0].id);
   assert.equal(result.id, results[0].id);
 });
